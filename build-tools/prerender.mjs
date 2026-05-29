@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { stripRootPreloadLinks } from './prerenderHtml.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, '..');
@@ -161,7 +162,7 @@ try {
 
   for (const route of routes) {
     const routePath = normalizePath(route.path);
-    const appHtml = render(routePath);
+    const appHtml = stripRootPreloadLinks(render(routePath));
     const html = replaceSeoHead(template, route)
       .replace('<div id="root"></div>', `<div id="root">${appHtml}</div>`)
       .replace('<!-- Twitter -->', '<!-- Open Graph / Social Preview -->');

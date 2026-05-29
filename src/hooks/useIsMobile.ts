@@ -6,11 +6,7 @@ import { useState, useEffect } from 'react';
  * @returns boolean indicating if the viewport is mobile-sized.
  */
 export function useIsMobile(breakpoint: number = 768) {
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined'
-      ? window.matchMedia(`(max-width: ${breakpoint}px)`).matches
-      : false
-  );
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

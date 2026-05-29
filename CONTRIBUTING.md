@@ -1,12 +1,10 @@
 # Contributing
 
-> **Note:** This README will be updated soon with full information.
-
 ## Local Development
 
 ### Prerequisites
 
-- Node.js (v22.x)
+- Node.js (v24.x)
 - npm
 - Git
 
@@ -27,18 +25,21 @@
 
 3. **Environment Configuration**
 
-   Copy `.env.example` to `.env` and add:
+   Copy `.env.example` to `.env`:
 
-   ```env
-   VITE_BOARD_IMAGES_BUCKET=
-   VITE_EVENT_FLYERS_BUCKET=
+   ```bash
+   cp .env.example .env
    ```
 
-   **Backend URL Options:**
+   **Backend URL options:**
    - **Production**: `https://api.nyu-sjba.org/v1`
    - **Local Development**: `/v1`
 
    Local development requests to `/v1` are proxied to `http://localhost:3000` by Vite.
+
+   For local database data, start local Supabase and the backend API from
+   `SJBA_site_backend`. The backend repository owns Supabase CLI usage, migrations,
+   local database reset/seed workflows, and backend Supabase environment values.
 
    > See: [SJBA Backend Repository](https://github.com/ohortig/SJBA_site_backend)
 
@@ -48,7 +49,7 @@
    npm run dev
    ```
 
-   The site will be available at `http://localhost:5173`
+   By default, the site will be available at `http://localhost:5173`
 
 ### Available Scripts
 
@@ -60,6 +61,12 @@
 - `npm run test:coverage` - Run tests with a local coverage report
 - `npm run test:watch` - Run Vitest in watch mode for local development
 - `npm run format` - Format code
+
+### Pre-commit Checks
+
+This repo uses Husky and lint-staged. After `npm install`, the `prepare` script installs the
+Git hooks. On commit, staged TypeScript files are linted and formatted, and staged CSS files are
+formatted. If the hook rewrites a file, review and re-stage it before committing again.
 
 ### Testing
 
@@ -80,3 +87,19 @@ Expected coverage for this project is practical rather than exhaustive. New feat
 Running `npm run test:coverage` creates a local `coverage/` folder. This folder is generated output, is ignored by Git, and should not be committed. Open `coverage/index.html` in a browser to inspect the report. The top-level percentage is useful context, but it should not be treated as a strict quality score for this project because many pages and reusable visual components are mostly static.
 
 CI runs linting, Prettier checks, tests, and a production build on pushes and pull requests targeting `main`.
+
+## Contributions
+
+### Code ownership
+
+Code ownership is controlled by SJBA's Director of Technology.
+
+To propose a change, create a new Git branch based on `main`:
+
+```bash
+git switch -c your-name/title-of-change-or-addition
+```
+
+A code owner will review and merge your changes in a timely manner.
+
+Contact the Director of Technology with any questions.
