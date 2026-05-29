@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { Header, ScrollToTop, Seo } from '@components';
@@ -13,10 +14,18 @@ import {
 } from './pages';
 import './App.css';
 
-export const AppContent = () => (
-  <>
-    <ScrollToTop />
-    <Seo />
+const ClientToaster = () => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return null;
+  }
+
+  return (
     <Toaster
       position="top-right"
       toastOptions={{
@@ -46,6 +55,14 @@ export const AppContent = () => (
         },
       }}
     />
+  );
+};
+
+export const AppContent = () => (
+  <>
+    <ScrollToTop />
+    <Seo />
+    <ClientToaster />
     <div className="app">
       <Header />
       <main className="main-content">
