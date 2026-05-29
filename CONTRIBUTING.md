@@ -4,7 +4,7 @@
 
 ### Prerequisites
 
-- Node.js (v22.x)
+- Node.js (v24.x)
 - npm
 - Git
 
@@ -62,6 +62,12 @@
 - `npm run test:watch` - Run Vitest in watch mode for local development
 - `npm run format` - Format code
 
+### Pre-commit Checks
+
+This repo uses Husky and lint-staged. After `npm install`, the `prepare` script installs the
+Git hooks. On commit, staged TypeScript files are linted and formatted, and staged CSS files are
+formatted. If the hook rewrites a file, review and re-stage it before committing again.
+
 ### Testing
 
 This project uses Vitest with React Testing Library, jsdom, and MSW.
@@ -81,3 +87,19 @@ Expected coverage for this project is practical rather than exhaustive. New feat
 Running `npm run test:coverage` creates a local `coverage/` folder. This folder is generated output, is ignored by Git, and should not be committed. Open `coverage/index.html` in a browser to inspect the report. The top-level percentage is useful context, but it should not be treated as a strict quality score for this project because many pages and reusable visual components are mostly static.
 
 CI runs linting, Prettier checks, tests, and a production build on pushes and pull requests targeting `main`.
+
+## Contributions
+
+### Code ownership
+
+Code ownership is controlled by SJBA's Director of Technology.
+
+To propose a change, create a new Git branch based on `main`:
+
+```bash
+git switch -c your-name/title-of-change-or-addition
+```
+
+A code owner will review and merge your changes in a timely manner.
+
+Contact the Director of Technology with any questions.
