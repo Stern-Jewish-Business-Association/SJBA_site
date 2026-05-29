@@ -1,7 +1,5 @@
 # Contributing
 
-> **Note:** This README will be updated soon with full information.
-
 ## Local Development
 
 ### Prerequisites
@@ -27,18 +25,21 @@
 
 3. **Environment Configuration**
 
-   Copy `.env.example` to `.env` and add:
+   Copy `.env.example` to `.env`:
 
-   ```env
-   VITE_BOARD_IMAGES_BUCKET=
-   VITE_EVENT_FLYERS_BUCKET=
+   ```bash
+   cp .env.example .env
    ```
 
-   **Backend URL Options:**
+   **Backend URL options:**
    - **Production**: `https://api.nyu-sjba.org/v1`
    - **Local Development**: `/v1`
 
    Local development requests to `/v1` are proxied to `http://localhost:3000` by Vite.
+
+   For local database data, start local Supabase and the backend API from
+   `SJBA_site_backend`. The backend repository owns Supabase CLI usage, migrations,
+   local database reset/seed workflows, and backend Supabase environment values.
 
    > See: [SJBA Backend Repository](https://github.com/ohortig/SJBA_site_backend)
 
@@ -48,7 +49,7 @@
    npm run dev
    ```
 
-   The site will be available at `http://localhost:5173`
+   By default, the site will be available at `http://localhost:5173`
 
 ### Available Scripts
 
