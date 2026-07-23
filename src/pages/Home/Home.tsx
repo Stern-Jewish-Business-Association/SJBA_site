@@ -205,7 +205,7 @@ const HomeNextEventPopup = () => {
 
   const nextEventThumbnail = useMemo(() => {
     if (!nextEvent?.flyerFile) return undefined;
-    return getEventThumbnailUrl(nextEvent.flyerFile);
+    return getEventThumbnailUrl(nextEvent.flyerFile, nextEvent.updatedAt);
   }, [nextEvent]);
   const currentDateKey = useMemo(() => getCurrentSiteDateKey(now), [now]);
   const nextEventDateLabel = useMemo(() => {

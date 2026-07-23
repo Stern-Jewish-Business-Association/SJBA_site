@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { BOARD_IMAGES_BUCKET } from '../../constants';
 import type { BoardMember } from '../../types';
+import { getBoardMemberImageUrl } from '../../utils';
 import './BoardMemberModal.css';
 
 interface BoardMemberModalProps {
@@ -205,7 +205,7 @@ export const BoardMemberModal: React.FC<BoardMemberModalProps> = ({
                     </div>
                   ) : (
                     <img
-                      src={`${BOARD_IMAGES_BUCKET}${member.headshotFile}`}
+                      src={getBoardMemberImageUrl(member.headshotFile, member.headshotUpdatedAt)}
                       alt={`${member.fullName} headshot`}
                       className="member-headshot large"
                       onError={() => onImageError(member.fullName)}

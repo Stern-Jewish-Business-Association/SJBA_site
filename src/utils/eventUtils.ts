@@ -1,5 +1,6 @@
-import { EVENT_FLYERS_THUMBNAILS_BUCKET } from '@constants';
+import { EVENT_FLYERS_BUCKET } from '@constants';
 import type { Event } from '@types';
+import { getMediaThumbnailPath } from './mediaUtils';
 import { SITE_TIME_ZONE } from './siteTimeUtils';
 
 const EVENT_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
@@ -58,10 +59,19 @@ export const formatEventTimeOnly = (startTime: string, endTime: string | null): 
   return `${startLabel} - ${endLabel}`;
 };
 
-export const getEventThumbnailUrl = (filename: string | null): string => {
+const appendAssetVersion = (url: string, version?: string): string => {
+  if (!version) return url;
+  return `${url}?v=${encodeURIComponent(version)}`;
+};
+
+export const getEventFlyerUrl = (filename: string | null, version?: string): string => {
   if (!filename) return '';
-  const thumbnailName = filename.replace(/\.(png|webp|jpeg|jpg)$/i, '.jpg');
-  return `${EVENT_FLYERS_THUMBNAILS_BUCKET}${thumbnailName}`;
+  return appendAssetVersion(`${EVENT_FLYERS_BUCKET}${filename}`, version);
+};
+
+export const getEventThumbnailUrl = (filename: string | null, version?: string): string => {
+  if (!filename) return '';
+  return appendAssetVersion(`${EVENT_FLYERS_BUCKET}${getMediaThumbnailPath(filename)}`, version);
 };
 
 export const compareEventStarts = (

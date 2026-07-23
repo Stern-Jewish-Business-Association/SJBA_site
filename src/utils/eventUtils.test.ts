@@ -1,9 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Event } from '@types';
-import { formatEventDate, getEventThumbnailUrl, getNextUpcomingEvent } from './eventUtils';
+import {
+  formatEventDate,
+  getEventFlyerUrl,
+  getEventThumbnailUrl,
+  getNextUpcomingEvent,
+} from './eventUtils';
 
 vi.mock('@constants', () => ({
-  EVENT_FLYERS_THUMBNAILS_BUCKET: 'https://cdn.example.com/event-thumbnails/',
+  EVENT_FLYERS_BUCKET: 'https://cdn.example.com/event-flyers/',
 }));
 
 const makeEvent = (id: string, startTime: string): Event => ({
@@ -32,11 +37,34 @@ describe('eventUtils', () => {
     expect(formatEventDate('not-a-date', null)).toBe('Date TBA • Time TBA');
   });
 
-  it('builds thumbnail URLs from flyer filenames', () => {
+  it('builds canonical root-level flyer URLs', () => {
+    expect(getEventFlyerUrl('spring-panel.PNG')).toBe(
+      'https://cdn.example.com/event-flyers/spring-panel.PNG'
+    );
     expect(getEventThumbnailUrl('spring-panel.PNG')).toBe(
-      'https://cdn.example.com/event-thumbnails/spring-panel.jpg'
+      'https://cdn.example.com/event-flyers/thumbnails/spring-panel.jpg'
     );
     expect(getEventThumbnailUrl(null)).toBe('');
+  });
+
+  it('versions full-size and thumbnail URLs when event metadata changes', () => {
+    const version = '2026-07-22T18:42:00.000Z';
+
+    expect(getEventFlyerUrl('spring-panel.webp', version)).toBe(
+      'https://cdn.example.com/event-flyers/spring-panel.webp?v=2026-07-22T18%3A42%3A00.000Z'
+    );
+    expect(getEventThumbnailUrl('spring-panel.webp', version)).toBe(
+      'https://cdn.example.com/event-flyers/thumbnails/spring-panel.jpg?v=2026-07-22T18%3A42%3A00.000Z'
+    );
+  });
+
+  it('keeps transitional nested flyer paths compatible', () => {
+    expect(getEventFlyerUrl('events/spring-panel.webp')).toBe(
+      'https://cdn.example.com/event-flyers/events/spring-panel.webp'
+    );
+    expect(getEventThumbnailUrl('events/spring-panel.webp')).toBe(
+      'https://cdn.example.com/event-flyers/events/thumbnails/spring-panel.jpg'
+    );
   });
 
   it('returns the next upcoming event sorted by start time', () => {
