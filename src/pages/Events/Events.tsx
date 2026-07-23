@@ -12,12 +12,12 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import { ArrowIcon, ErrorDisplay, Footer, LoadingSpinner, SubpageHero } from '@components';
 import { dataService } from '@api';
 import { useCurrentTime, useScrollAnimation } from '@hooks';
-import { EVENT_FLYERS_BUCKET } from '@constants';
 import { SITE_NAME, SITE_URL } from '@seo';
 import {
   compareEventStarts,
   formatEventDateOnly,
   formatEventTimeOnly,
+  getEventFlyerUrl,
   getEventThumbnailUrl,
   isEventPast,
   semesterLabel,
@@ -75,11 +75,6 @@ const parsePositiveInteger = (value: string | null, fallback: number): number =>
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
-const getEventFlyerSrc = (flyerFile: string | null): string => {
-  if (!flyerFile) return '';
-  return `${EVENT_FLYERS_BUCKET}${flyerFile}`;
-};
-
 const mergeUniqueEvents = (eventPages: Event[][]): Event[] => {
   const seenIds = new Set<string>();
   const merged: Event[] = [];
@@ -101,6 +96,9 @@ const normalizeEventDescription = (description: string | null): string => {
   return description.replace(/\\n/g, '\n').trim();
 };
 
+export const hasActionableRsvpLink = (rsvpLink: string | null): rsvpLink is string =>
+  Boolean(rsvpLink?.trim() && rsvpLink.trim() !== '#');
+
 const getEventJsonLd = (event: Event) => ({
   '@context': 'https://schema.org',
   '@type': 'Event',
@@ -108,7 +106,7 @@ const getEventJsonLd = (event: Event) => ({
   startDate: event.startTime,
   ...(event.endTime ? { endDate: event.endTime } : {}),
   ...(event.description ? { description: normalizeEventDescription(event.description) } : {}),
-  ...(event.flyerFile ? { image: `${EVENT_FLYERS_BUCKET}${event.flyerFile}` } : {}),
+  ...(event.flyerFile ? { image: getEventFlyerUrl(event.flyerFile, event.updatedAt) } : {}),
   eventStatus: 'https://schema.org/EventScheduled',
   eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
   url: `${SITE_URL}/events#event-${encodeURIComponent(event.id)}`,
@@ -233,7 +231,7 @@ const EventFlyer = ({
   registerFlyerButton,
 }: EventFlyerProps) => {
   const hasImage = Boolean(event.flyerFile) && !imageErrors.has(event.id);
-  const thumbnailSrc = getEventThumbnailUrl(event.flyerFile);
+  const thumbnailSrc = getEventThumbnailUrl(event.flyerFile, event.updatedAt);
 
   if (!hasImage) {
     return (
@@ -260,7 +258,7 @@ const EventFlyer = ({
       onMouseEnter={() => onPreload(event)}
       onFocus={() => onPreload(event)}
       aria-label={`View ${event.title} flyer`}
-      data-full-src={getEventFlyerSrc(event.flyerFile)}
+      data-full-src={getEventFlyerUrl(event.flyerFile, event.updatedAt)}
       data-event-id={event.id}
     >
       <img
@@ -388,7 +386,7 @@ const EventCard = ({
         </div>
 
         <div className="event-card__actions">
-          {event.rsvpLink && !isPastEvent ? (
+          {hasActionableRsvpLink(event.rsvpLink) && !isPastEvent ? (
             <a
               href={event.rsvpLink}
               target="_blank"
@@ -518,7 +516,7 @@ export const Events = () => {
 
   const preloadFullImage = useCallback(
     (event: Event) => {
-      const fullSrc = getEventFlyerSrc(event.flyerFile);
+      const fullSrc = getEventFlyerUrl(event.flyerFile, event.updatedAt);
       if (!fullSrc || imageErrors.has(event.id) || preloadedImagesRef.current.has(fullSrc)) {
         return;
       }
@@ -554,7 +552,7 @@ export const Events = () => {
 
   const handleOpenFlyer = useCallback(
     (event: Event) => {
-      const fullSrc = getEventFlyerSrc(event.flyerFile);
+      const fullSrc = getEventFlyerUrl(event.flyerFile, event.updatedAt);
       if (!fullSrc) {
         return;
       }

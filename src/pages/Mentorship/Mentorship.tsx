@@ -12,7 +12,6 @@ import { dataService } from '@api';
 import {
   MENTORSHIP_APPLICATION_CONFIG_DEFAULTS,
   MENTORSHIP_APPLICATION_CONFIG_STORAGE_KEY,
-  MENTORSHIP_APPLICATION_CONFIG_TTL_MS,
 } from '@constants';
 import { useScrollAnimation } from '@hooks';
 import type { BoardMember } from '@types';
@@ -28,11 +27,7 @@ type PersistedApplicationConfig = ApplicationConfig & {
 };
 
 let cachedApplicationConfig: ApplicationConfig | null = null;
-let cachedApplicationConfigAt: number | null = null;
 let applicationConfigPromise: Promise<ApplicationConfig> | null = null;
-
-const isFreshApplicationConfig = (fetchedAt: number) =>
-  Date.now() - fetchedAt < MENTORSHIP_APPLICATION_CONFIG_TTL_MS;
 
 const readPersistedApplicationConfig = (): PersistedApplicationConfig | null => {
   if (typeof window === 'undefined') {
@@ -78,39 +73,18 @@ const writePersistedApplicationConfig = (config: PersistedApplicationConfig) => 
   }
 };
 
-const clearPersistedApplicationConfig = () => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  try {
-    window.localStorage.removeItem(MENTORSHIP_APPLICATION_CONFIG_STORAGE_KEY);
-  } catch (error) {
-    console.error('Failed to clear mentorship application config cache:', error);
-  }
-};
-
-const getFreshCachedApplicationConfig = () => {
-  if (
-    cachedApplicationConfig !== null &&
-    cachedApplicationConfigAt !== null &&
-    isFreshApplicationConfig(cachedApplicationConfigAt)
-  ) {
+const getCachedApplicationConfig = () => {
+  if (cachedApplicationConfig !== null) {
     return cachedApplicationConfig;
   }
 
   const persistedConfig = readPersistedApplicationConfig();
-  if (persistedConfig && isFreshApplicationConfig(persistedConfig.fetchedAt)) {
+  if (persistedConfig) {
     cachedApplicationConfig = {
       isApplicationOpen: persistedConfig.isApplicationOpen,
       applicationUrl: persistedConfig.applicationUrl,
     };
-    cachedApplicationConfigAt = persistedConfig.fetchedAt;
     return cachedApplicationConfig;
-  }
-
-  if (persistedConfig) {
-    clearPersistedApplicationConfig();
   }
 
   return null;
@@ -162,24 +136,19 @@ export const Mentorship = () => {
   const processAnim = useScrollAnimation({ threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
   const applyAnim = useScrollAnimation({ threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
   const applyHeadingRef = useRef<HTMLHeadingElement | null>(null);
-  const freshCachedApplicationConfig = getFreshCachedApplicationConfig();
+  const initialApplicationConfig = getCachedApplicationConfig();
 
   const [mentorshipChair, setMentorshipChair] = useState<BoardMember | null>(null);
   const [isApplicationOpen, setIsApplicationOpen] = useState<boolean | null>(
-    freshCachedApplicationConfig?.isApplicationOpen ?? null
+    initialApplicationConfig?.isApplicationOpen ?? null
   );
   const [applicationUrl, setApplicationUrl] = useState(
-    freshCachedApplicationConfig?.applicationUrl ?? ''
+    initialApplicationConfig?.applicationUrl ?? ''
   );
   const isApplicationStatusReady = isApplicationOpen !== null;
 
   useEffect(() => {
     const resolveApplicationConfig = async (): Promise<ApplicationConfig> => {
-      const freshCachedConfig = getFreshCachedApplicationConfig();
-      if (freshCachedConfig) {
-        return freshCachedConfig;
-      }
-
       if (!applicationConfigPromise) {
         applicationConfigPromise = dataService.siteConfig
           .getByKeys(['mentorship_application_open', 'mentorship_application_url'])
@@ -191,14 +160,6 @@ export const Mentorship = () => {
               config.mentorship_application_url ??
               MENTORSHIP_APPLICATION_CONFIG_DEFAULTS.mentorship_application_url,
           }))
-          .catch((error) => {
-            console.error('Failed to fetch site config:', error);
-            return {
-              isApplicationOpen:
-                MENTORSHIP_APPLICATION_CONFIG_DEFAULTS.mentorship_application_open === 'true',
-              applicationUrl: MENTORSHIP_APPLICATION_CONFIG_DEFAULTS.mentorship_application_url,
-            };
-          })
           .finally(() => {
             applicationConfigPromise = null;
           });
@@ -207,7 +168,6 @@ export const Mentorship = () => {
       const config = await applicationConfigPromise;
       const fetchedAt = Date.now();
       cachedApplicationConfig = config;
-      cachedApplicationConfigAt = fetchedAt;
       writePersistedApplicationConfig({ ...config, fetchedAt });
       return config;
     };
@@ -221,6 +181,17 @@ export const Mentorship = () => {
       if (applicationConfig.status === 'fulfilled') {
         setIsApplicationOpen(applicationConfig.value.isApplicationOpen);
         setApplicationUrl(applicationConfig.value.applicationUrl);
+      } else {
+        console.error('Failed to fetch site config:', applicationConfig.reason);
+        setIsApplicationOpen(
+          (currentValue) =>
+            currentValue ??
+            MENTORSHIP_APPLICATION_CONFIG_DEFAULTS.mentorship_application_open === 'true'
+        );
+        setApplicationUrl(
+          (currentValue) =>
+            currentValue || MENTORSHIP_APPLICATION_CONFIG_DEFAULTS.mentorship_application_url
+        );
       }
 
       if (membersResult.status === 'fulfilled') {

@@ -10,7 +10,7 @@ import {
 } from '@components';
 import { useScrollAnimation } from '@hooks';
 import { dataService } from '@api';
-import { BOARD_IMAGES_BUCKET, BOARD_THUMBNAILS_BUCKET } from '@constants';
+import { getBoardMemberImageUrl, getBoardMemberThumbnailUrl } from '@utils';
 import type { BoardMember } from '@types';
 import './OurBoard.css';
 
@@ -57,7 +57,7 @@ export const OurBoard = () => {
           return;
         }
 
-        const fullSrc = `${BOARD_IMAGES_BUCKET}${member.headshotFile}`;
+        const fullSrc = getBoardMemberImageUrl(member.headshotFile, member.headshotUpdatedAt);
 
         if (preloadedImagesRef.current.has(fullSrc)) {
           resolve(true);
@@ -225,7 +225,10 @@ export const OurBoard = () => {
                           </div>
                         ) : (
                           <img
-                            src={`${BOARD_THUMBNAILS_BUCKET}${member.headshotFile?.replace(/\.(png|webp|jpeg)$/i, '.jpg')}`}
+                            src={getBoardMemberThumbnailUrl(
+                              member.headshotFile,
+                              member.headshotUpdatedAt
+                            )}
                             alt={`${member.fullName} headshot`}
                             className="member-headshot"
                             onError={() => handleImageError(member.fullName)}

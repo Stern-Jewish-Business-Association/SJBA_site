@@ -1,5 +1,6 @@
 export interface BoardMember {
   id: string;
+  headshotUpdatedAt: string;
   position: string;
   fullName: string;
   bio: string;

@@ -7,6 +7,7 @@ import { BoardMemberModal } from './BoardMemberModal';
 
 const member: BoardMember = {
   id: 'member-1',
+  headshotUpdatedAt: '2026-07-22T18:42:00.000Z',
   fullName: 'Ada Lovelace',
   position: 'President',
   bio: 'Builds bridges.\nHosts events.',
@@ -57,7 +58,7 @@ describe('BoardMemberModal', () => {
     );
     expect(screen.getByAltText('Ada Lovelace headshot')).toHaveAttribute(
       'src',
-      `${BOARD_IMAGES_BUCKET}ada.jpg`
+      `${BOARD_IMAGES_BUCKET}ada.jpg?v=2026-07-22T18%3A42%3A00.000Z`
     );
   });
 
